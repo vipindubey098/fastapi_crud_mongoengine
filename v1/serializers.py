@@ -52,3 +52,20 @@ class CategoryModels(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class usersDetail(BaseModel):
+    fullname: str
+    email: str
+    password: str
+    
+    class Config:
+        arbitrary_types_allowed = True
+
+class checkUserLogin(BaseModel):
+    # fullname: str
+    email: str
+    password: str
+
+    class Config:
+        arbitrary_types_allowed = True

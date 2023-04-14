@@ -1,8 +1,40 @@
 from mongoengine import Document, EmbeddedDocument, StringField, BooleanField, IntField, fields, ListField, EmbeddedDocumentField, DateTimeField, DictField, ImageField
 from PIL import Image
-from datetime import datetime
+import datetime
 from pydantic import validator
 import logging
+from werkzeug.security import generate_password_hash, check_password_hash
+
+    
+class userInsert(Document):
+    full_name = StringField(max_length=120, required=True)
+    email = StringField(max_length=120, required=True)
+    password = StringField()
+
+    def payload(self):
+        return {
+            "fullname": self.full_name,
+            "email": self.email,
+            "password": self.password
+        }
+
+    def set_password(self, password):
+        return generate_password_hash(password)
+    
+    def check_password(self, pwd):
+        return check_password_hash(self.password, pwd)
+
+class UserLoginSchema(Document):
+    # fullname: StringField(max_length=120)
+    email: StringField(max_length=120)
+    password: StringField()
+
+    def payload(self):
+        return {
+            "id": str(self.id),
+            "full_name": self.fullname,
+            "email": self.email
+        }
 
 
 class Blogscategory(EmbeddedDocument):
@@ -27,7 +59,9 @@ class Blogstags(EmbeddedDocument):
         }
 
 class Blogsdetails(Document):
-    blogs_id = IntField(primary_key=True)
+    # blogs_id = IntField(primary_key=True)
+    #using primary_key=True will replace blogs_id using _id
+    blogs_id = IntField()
     title = StringField(max_length=120)
     description = StringField(max_length=120)
     image_field = StringField(max_length=120)
@@ -35,8 +69,8 @@ class Blogsdetails(Document):
     category = ListField(EmbeddedDocumentField(Blogscategory))
     # tags = fields.MapField(fields.EmbeddedDocumentField(Blogstags))
     tags = ListField(EmbeddedDocumentField(Blogstags))
-    # created_at = DateTimeField(default=datetime.now)
-
+    # created_at = DateTimeField(default=datetime.datetime.utcnow,required=True)
+    
     def payload(self):
         return {
             "id": self.blogs_id,
@@ -47,4 +81,5 @@ class Blogsdetails(Document):
             "tags": self.tags,
             # "created_at": self.created_at
         }
-    
+
+   

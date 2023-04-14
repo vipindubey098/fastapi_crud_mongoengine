@@ -1,3 +1,6 @@
 fastapi[all]
 mongoengine
 fastapi-pagination
+PyJWT==2.6.0
+python-decouple==3.8
+Werkzeug==2.2.3

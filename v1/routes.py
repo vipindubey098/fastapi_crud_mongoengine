@@ -18,7 +18,15 @@ router = APIRouter()
 
 # Insert data
 @router.post("/addblogs", dependencies=[Depends(jwtBearer())], tags=['Homepage'])
-async def add_blogs(blogs_id: int = Form(None), title: str = Form(...), image_field: Optional[UploadFile] = File(None), description: str = Form(...), category: list = Form(...), tags: list = Form(...)):
+# @router.post("/addblogs", tags=['Homepage'])
+async def add_blogs(
+    blogs_id: int = Form(None), 
+    title: str = Form(...), 
+    image_field: Optional[UploadFile] = File(None), 
+    description: str = Form(...), 
+    category: list = Form(...), 
+    tags: list = Form(...)
+    ):
 
     try:
         # fileread for image
@@ -49,16 +57,32 @@ async def add_blogs(blogs_id: int = Form(None), title: str = Form(...), image_fi
 
 # fetch all data
 @router.get('/get_all_blogs', dependencies=[Depends(jwtBearer())], tags=['Get All Blogs'])
-async def get_blogs(title: str = None, page: int = 1, per_page: int =10):
+async def get_blogs(
+    req: Request,
+    title: str = None, 
+    page: int = 1, 
+    per_page: int =10, 
+    sort_by: str = 'new_as'):
     try:
         skip = (page - 1) * per_page
         limit = per_page
+        
+        request_args = dict(req.query_params)
+        # we will first check data from url whether it contains sort_by or not using request_args
+        if request_args.get('sort_by'):
+            sort_by = request_args['sort_by']
+            # deleting sort_by
+            del request_args['sort_by']
+
+        # If i am getting new_as from sort_by then use +created_at else -created_at in query
+        sorting_data = "-created_at" if sort_by == "new_as" else "+created_at"
+
         if title:
             # with the help of __icontains it will help in searching of data
             query = Q(title__icontains=title)
-            blogs_list = Blogsdetails.objects(query).skip(skip).limit(limit)
+            blogs_list = Blogsdetails.objects(query).order_by(sorting_data).skip(skip).limit(limit)
         else:
-            blogs_list = Blogsdetails.objects().skip(skip).limit(limit)
+            blogs_list = Blogsdetails.objects().order_by(sorting_data).skip(skip).limit(limit)
         return{"blogs": json.loads(blogs_list.to_json())}
     except CustomExceptionHandler as e:
         raise HTTPException(status_code=e.code, details=e.message)
@@ -93,7 +117,8 @@ async def get_single_blogs(blogs_id: int = Path(..., gt=0)):
             "description": single_blogs.description,
             "image_field": single_blogs.image_field,
             "category":single_blogs.category,
-            "tags": single_blogs.tags
+            "tags": single_blogs.tags,
+            "created_at": single_blogs.created_at
         }
 
         return blogs_dict

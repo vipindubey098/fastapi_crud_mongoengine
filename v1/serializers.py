@@ -11,7 +11,7 @@ class BlogsModels(BaseModel):
     image_field : Optional[str]
     category : Optional[list]
     tags : Optional[list]
-    # created_at : datetime = datetime.now()
+    created_at : datetime = datetime.now()
 
     
 

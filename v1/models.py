@@ -69,7 +69,7 @@ class Blogsdetails(Document):
     category = ListField(EmbeddedDocumentField(Blogscategory))
     # tags = fields.MapField(fields.EmbeddedDocumentField(Blogstags))
     tags = ListField(EmbeddedDocumentField(Blogstags))
-    # created_at = DateTimeField(default=datetime.datetime.utcnow,required=True)
+    created_at = DateTimeField(default=datetime.datetime.utcnow,required=True)
     
     def payload(self):
         return {
